@@ -1,9 +1,63 @@
 "use client";
 
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+
 export default function LecturerDashboard() {
 
-  const handleSave = () => {
-    alert("Skema berjaya disimpan!");
+  const [eocFile, setEocFile] = useState<File | null>(null);
+  const [pwFile, setPwFile] = useState<File | null>(null);
+  const [testFile, setTestFile] = useState<File | null>(null);
+
+  const handleSave = async (
+    category: string,
+    file: File | null
+  ) => {
+
+    if (!file) {
+      alert("Sila pilih PDF dahulu!");
+      return;
+    }
+
+    const fileName = `${Date.now()}-${file.name}`;
+
+    // Upload ke Supabase Storage
+    const { data: uploadData, error: uploadError } =
+      await supabase.storage
+        .from("rubrics")
+        .upload(fileName, file);
+
+    if (uploadError) {
+      alert("Upload PDF gagal!");
+      console.log(uploadError);
+      return;
+    }
+
+    // Dapatkan public URL
+    const { data: publicUrlData } = supabase
+      .storage
+      .from("rubrics")
+      .getPublicUrl(fileName);
+
+    const fileUrl = publicUrlData.publicUrl;
+
+    // Save ke database
+    const { data, error } = await supabase
+      .from("rubrics")
+      .insert([
+        {
+          category: category,
+          file_url: fileUrl
+        }
+      ]);
+
+    if (error) {
+      alert("Gagal simpan database!");
+      console.log(error);
+    } else {
+      alert("Skema berjaya upload!");
+      console.log(data);
+    }
   };
 
   return (
@@ -29,11 +83,14 @@ export default function LecturerDashboard() {
           <input
             type="file"
             accept=".pdf"
+            onChange={(e) =>
+              setEocFile(e.target.files?.[0] || null)
+            }
             className="w-full border border-gray-300 rounded-lg p-3 mb-4"
           />
 
           <button
-            onClick={handleSave}
+            onClick={() => handleSave("EOC", eocFile)}
             className="w-full bg-blue-700 hover:bg-blue-800 text-white py-3 rounded-xl"
           >
             Simpan Skema
@@ -51,11 +108,14 @@ export default function LecturerDashboard() {
           <input
             type="file"
             accept=".pdf"
+            onChange={(e) =>
+              setPwFile(e.target.files?.[0] || null)
+            }
             className="w-full border border-gray-300 rounded-lg p-3 mb-4"
           />
 
           <button
-            onClick={handleSave}
+            onClick={() => handleSave("PW", pwFile)}
             className="w-full bg-blue-700 hover:bg-blue-800 text-white py-3 rounded-xl"
           >
             Simpan Skema
@@ -73,11 +133,14 @@ export default function LecturerDashboard() {
           <input
             type="file"
             accept=".pdf"
+            onChange={(e) =>
+              setTestFile(e.target.files?.[0] || null)
+            }
             className="w-full border border-gray-300 rounded-lg p-3 mb-4"
           />
 
           <button
-            onClick={handleSave}
+            onClick={() => handleSave("TEST", testFile)}
             className="w-full bg-blue-700 hover:bg-blue-800 text-white py-3 rounded-xl"
           >
             Simpan Skema
