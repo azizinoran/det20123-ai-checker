@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-orbitron: 'Orbitron', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
+}
+
+.font-orbitron {
+  font-family: var(--font-orbitron);
+}
+
+body {
+  font-family: var(--font-poppins);
 }
 
 @theme inline {

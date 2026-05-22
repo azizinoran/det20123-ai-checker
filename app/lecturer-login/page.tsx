@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function LecturerLoginPage() {
 
@@ -10,17 +11,21 @@ export default function LecturerLoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
+const handleLogin = async () => {
+  const { data, error } =
+    await supabase.auth.signInWithPassword({
+      email: username,
+      password: password,
+    });
 
-    if (
-      username === "lecturer" &&
-      password === "admin123"
-    ) {
-      router.push("/lecturer/dashboard");
-    } else {
-      alert("Username atau Password Salah!");
-    }
-  };
+  if (error) {
+    alert("Login gagal!");
+    console.log(error.message);
+    return;
+  }
+
+  router.push("/lecturer/dashboard");
+};
 
   return (
     <main className="min-h-screen bg-blue-50 flex items-center justify-center">
@@ -53,6 +58,15 @@ export default function LecturerLoginPage() {
         >
           Login
         </button>
+
+        <button
+  onClick={() =>
+    router.push("/lecturer-register")
+  }
+  className="w-full mt-4 border border-blue-700 text-blue-700 py-4 rounded-xl hover:bg-blue-50 transition"
+>
+  Daftar Pengguna Baru
+</button>
 
       </div>
 
